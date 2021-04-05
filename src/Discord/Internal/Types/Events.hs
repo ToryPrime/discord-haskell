@@ -52,7 +52,7 @@ data Event =
   | PresenceUpdate          PresenceInfo
   | TypingStart             TypingInfo
   | UserUpdate              User
-  -- | VoiceStateUpdate
+  | VoiceStateUpdate        VoiceStateInfo
   -- | VoiceServerUpdate
   | UnknownEvent     T.Text Object
   deriving (Show, Eq)
@@ -118,7 +118,19 @@ instance FromJSON TypingInfo where
        pure (TypingInfo uid cid utc)
 
 
+data VoiceStateInfo = VoiceStateInfo
+  { voiceStateUpdateUser :: User
+  , voiceStateUpdateHasVideo :: Bool
+  , voiceStateUpdateChannelId :: ChannelId
+  } deriving (Show, Eq, Ord)
 
+instance FromJSON VoiceStateInfo where
+  parseJSON = withObject "VoiceStateUpdate" $ \o ->
+    VoiceStateInfo <$> o .: "user"
+                   <*> o .: "self_video"
+                   <*> o .: "channel_id"
+
+                     
 -- | Convert ToJSON value to FromJSON value
 reparse :: (ToJSON a, FromJSON b) => a -> Parser b
 reparse val = case parseEither parseJSON $ toJSON val of
@@ -169,6 +181,6 @@ eventParse t o = case t of
     "PRESENCE_UPDATE"           -> PresenceUpdate            <$> reparse o
     "TYPING_START"              -> TypingStart               <$> reparse o
     "USER_UPDATE"               -> UserUpdate                <$> reparse o
- -- "VOICE_STATE_UPDATE"        -> VoiceStateUpdate          <$> reparse o
+    "VOICE_STATE_UPDATE"        -> VoiceStateUpdate          <$> reparse o
  -- "VOICE_SERVER_UPDATE"       -> VoiceServerUpdate         <$> reparse o
     _other_event                -> UnknownEvent t            <$> reparse o
