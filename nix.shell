@@ -1,0 +1,41 @@
+{ nixpkgs ? import <nixpkgs> {} }:
+let
+  inherit (nixpkgs) pkgs;
+    inherit (pkgs) haskellPackages;
+
+  haskellDeps = ps: with ps; [
+    aeson
+    async
+    bytestring
+    base64-bytestring
+    containers
+    data-default
+    emoji
+    http-client
+                      iso8601-time
+                      MonadRandom
+                      req
+                      JuicyPixels
+                      safe-exceptions
+                      text
+                      time
+                      unordered-containers
+                      vector
+                      websockets
+                      wuss
+                      mtl
+                      unliftio
+  ];
+
+  ghc = haskellPackages.ghcWithPackages haskellDeps;
+
+  nixPackages = [
+    ghc
+    haskellPackages.cabal-install
+    haskellPackages.cabal2nix
+  ];
+in
+pkgs.stdenv.mkDerivation {
+  name = "env";
+  buildInputs = nixPackages;
+}
