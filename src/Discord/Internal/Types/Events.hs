@@ -126,7 +126,7 @@ data VoiceStateInfo = VoiceStateInfo
 
 instance FromJSON VoiceStateInfo where
   parseJSON = withObject "VoiceStateUpdate" $ \o ->
-    VoiceStateInfo <$> o .: "member" >>= (.: "user")
+    VoiceStateInfo <$> (o .: "member" >>= (.: "user"))
                    <*> o .: "self_video"
                    <*> o .: "channel_id"
 
